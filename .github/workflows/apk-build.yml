@@ -19,12 +19,16 @@ jobs:
 
       - name: Extract Flutter project
         run: |
+          mkdir -p extracted
           unzip -o bubble_finance_flutter.zip -d extracted
+
           PROJECT_DIR="$(dirname "$(find extracted -name pubspec.yaml -print -quit)")"
+
           if [ -z "$PROJECT_DIR" ] || [ ! -f "$PROJECT_DIR/pubspec.yaml" ]; then
             echo "ERROR: pubspec.yaml not found"
             exit 1
           fi
+
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Setup Flutter
@@ -32,6 +36,13 @@ jobs:
         with:
           channel: stable
           cache: true
+
+      - name: Prepare Android project
+        run: |
+          if [ ! -d android ]; then
+            flutter create --platforms=android .
+          fi
+        working-directory: ${{ env.PROJECT_DIR }}
 
       - name: Install dependencies
         run: flutter pub get
