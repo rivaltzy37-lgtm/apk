@@ -1,6 +1,6 @@
 name: Build Bubble Finance APK
 
-on:
+'on':
 workflow_dispatch:
 push:
 branches:
@@ -12,10 +12,9 @@ contents: read
 jobs:
 build:
 runs-on: ubuntu-latest
-
 steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+- name: Checkout repository
+uses: actions/checkout@v4
 
   - name: Extract Flutter project
     run: |
@@ -25,7 +24,7 @@ steps:
   - name: Set project directory
     run: |
       PROJECT_DIR=$(dirname "$(find extracted -name pubspec.yaml -print -quit)")
-      if [ -z "$PROJECT_DIR" ]; then
+      if [ "$PROJECT_DIR" = "extracted" ] || [ -z "$PROJECT_DIR" ]; then
         echo "ERROR: pubspec.yaml not found"
         exit 1
       fi
