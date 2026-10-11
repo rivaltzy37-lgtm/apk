@@ -1,52 +1,49 @@
 name: Build Bubble Finance APK
 
 'on':
-workflow_dispatch:
-push:
-branches:
-- main
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
-contents: read
+  contents: read
 
 jobs:
-build:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout repository
-uses: actions/checkout@v4
+  build:
+    runs-on: ubuntu-latest
 
-  - name: Extract Flutter project
-    run: |
-      unzip -o bubble_finance_flutter.zip -d extracted
-      find extracted -name pubspec.yaml -print
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Set project directory
-    run: |
-      PROJECT_DIR=$(dirname "$(find extracted -name pubspec.yaml -print -quit)")
-      if [ "$PROJECT_DIR" = "extracted" ] || [ -z "$PROJECT_DIR" ]; then
-        echo "ERROR: pubspec.yaml not found"
-        exit 1
-      fi
-      echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+      - name: Extract Flutter project
+        run: |
+          unzip -o bubble_finance_flutter.zip -d extracted
+          PROJECT_DIR="$(dirname "$(find extracted -name pubspec.yaml -print -quit)")"
+          if [ -z "$PROJECT_DIR" ] || [ ! -f "$PROJECT_DIR/pubspec.yaml" ]; then
+            echo "ERROR: pubspec.yaml not found"
+            exit 1
+          fi
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-  - name: Setup Flutter
-    uses: subosito/flutter-action@v2
-    with:
-      channel: stable
-      cache: true
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
 
-  - name: Install dependencies
-    run: flutter pub get
-    working-directory: ${{ env.PROJECT_DIR }}
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: ${{ env.PROJECT_DIR }}
 
-  - name: Build APK
-    run: flutter build apk --release
-    working-directory: ${{ env.PROJECT_DIR }}
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: ${{ env.PROJECT_DIR }}
 
-  - name: Upload APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: bubble-finance-apk
-      path: ${{ env.PROJECT_DIR }}/build/app/outputs/flutter-apk/app-release.apk
-      if-no-files-found: error
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: bubble-finance-apk
+          path: ${{ env.PROJECT_DIR }}/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
